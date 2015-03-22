@@ -25,6 +25,11 @@
         android:showAsAction="ifRoom"
         android:title="@string/menuitem_save">
     </item>
+    <item
+        android:id="@+id/imageButton"
+        android:showAsAction="ifRoom"
+        android:title="@string/menuitem_background">
+    </item>
     
 
 </menu>

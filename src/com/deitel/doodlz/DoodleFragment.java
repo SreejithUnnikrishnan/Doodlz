@@ -2,14 +2,23 @@
 // Fragment in which the DoodleView is displayed
 package com.deitel.doodlz;
 
+import java.io.File;
+
 import android.app.Fragment;
 import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Intent;
+import android.database.Cursor;
+
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -132,7 +141,9 @@ public class DoodleFragment extends Fragment
       }; // end anonymous inner class 
    
    // confirm whether image should be erased
-   private void confirmErase()
+
+private Drawable d;
+private View mv;   private void confirmErase()
    {
       EraseImageDialogFragment fragment = new EraseImageDialogFragment();
       fragment.show(getFragmentManager(), "erase dialog");
@@ -174,6 +185,12 @@ public class DoodleFragment extends Fragment
          case R.id.print:     
             doodleView.printImage(); // print the current images
             return true; // consume the menu event
+         case R.id.imageButton:     
+        	 Intent intent = new Intent();
+        	    intent.setType("image/*");
+        	    intent.setAction(Intent.ACTION_GET_CONTENT);
+        	    startActivityForResult(Intent.createChooser(intent, "Select background"),1); 
+             return true;
       } // end switch
 
       return super.onOptionsItemSelected(item); // call super's method
@@ -190,5 +207,42 @@ public class DoodleFragment extends Fragment
    {
       dialogOnScreen = visible;  
    }
+   
+   @Override
+   public void onActivityResult(int requestCode, int resultCode, Intent data) {
+   
+   if (requestCode == 1) {
+   
+   Uri currImageURI = data.getData();
+   System.out.println("Hello======="+getRealPathFromURI(currImageURI));
+   String s= getRealPathFromURI(currImageURI);
+   File file = new File(s);
+
+   if (file.exists()) {
+   d = Drawable.createFromPath(file.getAbsolutePath());
+   //mv.setBackgroundDrawable(d);
+    mv.setBackground(d);
+   }
+   else
+   {
+       System.out.println("File Not Found");
+   }
+
+
+
+   }
+   }
+   
+   public String getRealPathFromURI(Uri contentUri) {
+  
+    String[] filePathColumn = { MediaStore.Images.Media.DATA };
+    CursorLoader loader = new CursorLoader(null,contentUri, filePathColumn, null, null, null);
+    Cursor cursor = loader.loadInBackground();
+    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+    cursor.moveToFirst();
+    return cursor.getString(column_index);
+
+
+}
 }
 
